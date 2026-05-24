@@ -13,11 +13,11 @@ torch.onnx.export(m, x, f)
 os.system(f'onnxsim {f} {f} && open {f}')
 """
 
-from .block import (C1, C2, C3, C3TR, DFL, SPP, SPPF, Bottleneck, BottleneckCSP, C2f, C3Ghost, C3x, GhostBottleneck,
-                    HGBlock, HGStem, Proto, RepC3)
+from .block import (C1, C2, C3, C3TR, DFL, SPP, SPPF, Bottleneck, BottleneckCSP, C2f, C2f_HPC_Lite, C3Ghost, C3x,
+                    GhostBottleneck, HGBlock, HGStem, Proto, RepC3)
 from .conv import (CBAM, ChannelAttention, Concat, Conv, Conv2, ConvTranspose, DWConv, DWConvTranspose2d, Focus,
                    GhostConv, LightConv, RepConv, SpatialAttention,
-                   GAM_Attention,GCT,ShuffleAttention,ResBlock_CBAM,ECAAttention,SimAM,MHSA,GlobalContext,GatherExcite)
+                   GAM_Attention,GCT,ShuffleAttention,ResBlock_CBAM,ECAAttention,SimAM,SSC,MHSA,GlobalContext,GatherExcite)
 from .head import Classify, Detect, Pose, RTDETRDecoder, Segment
 from .transformer import (AIFI, MLP, DeformableTransformerDecoder, DeformableTransformerDecoderLayer, LayerNorm2d,
                           MLPBlock, MSDeformAttn, TransformerBlock, TransformerEncoderLayer, TransformerLayer)
@@ -25,7 +25,7 @@ from .transformer import (AIFI, MLP, DeformableTransformerDecoder, DeformableTra
 __all__ = ('Conv', 'Conv2', 'LightConv', 'RepConv', 'DWConv', 'DWConvTranspose2d', 'ConvTranspose', 'Focus',
            'GhostConv', 'ChannelAttention', 'SpatialAttention', 'CBAM', 'Concat', 'TransformerLayer',
            'TransformerBlock', 'MLPBlock', 'LayerNorm2d', 'DFL', 'HGBlock', 'HGStem', 'SPP', 'SPPF', 'C1', 'C2', 'C3',
-           'C2f', 'C3x', 'C3TR', 'C3Ghost', 'GhostBottleneck', 'Bottleneck', 'BottleneckCSP', 'Proto', 'Detect',
+           'C2f', 'C2f_HPC_Lite', 'C3x', 'C3TR', 'C3Ghost', 'GhostBottleneck', 'Bottleneck', 'BottleneckCSP', 'Proto', 'Detect',
            'Segment', 'Pose', 'Classify', 'TransformerEncoderLayer', 'RepC3', 'RTDETRDecoder', 'AIFI',
            'DeformableTransformerDecoder', 'DeformableTransformerDecoderLayer', 'MSDeformAttn', 'MLP',
-           'GAM_Attention','GCT','ShuffleAttention','ResBlock_CBAM','ECAAttention','SimAM','MHSA','GatherExcite','GlobalContext')
+           'GAM_Attention','GCT','ShuffleAttention','ResBlock_CBAM','ECAAttention','SimAM','SSC','MHSA','GatherExcite','GlobalContext')

@@ -2,3 +2,19 @@ dataset/*
 dataset/*.png
 models/*
 test_augment/*
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
+
+# Local datasets, checkpoints, and generated training artifacts
+/dataset/
+/runs/
+/output/
+/outputs/
+/wandb/
+/mlruns/
+*.pt
+*.onnx
+*.engine
+bus.jpg
