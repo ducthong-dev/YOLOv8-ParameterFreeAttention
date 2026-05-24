@@ -16,6 +16,8 @@ PROJECT="${PROJECT:-${OUTPUT_ROOT%/}/runs/classify}"
 VAL_NAME="${VAL_NAME:-${RUN_NAME}_${SPLIT}}"
 EXTRA_ARGS="${EXTRA_ARGS:-}"
 
+export WANDB_DISABLED="${WANDB_DISABLED:-true}"
+
 if [[ "$DEVICE" == "auto" ]]; then
   DEVICE="$(python - <<'PY'
 import torch

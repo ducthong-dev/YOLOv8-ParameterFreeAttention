@@ -18,6 +18,8 @@ OPTIMIZER="${OPTIMIZER:-AdamW}"
 PROJECT="${PROJECT:-${OUTPUT_ROOT%/}/runs/classify}"
 EXTRA_ARGS="${EXTRA_ARGS:-}"
 
+export WANDB_DISABLED="${WANDB_DISABLED:-true}"
+
 if [[ "$DEVICE" == "auto" ]]; then
   DEVICE="$(python - <<'PY'
 import torch

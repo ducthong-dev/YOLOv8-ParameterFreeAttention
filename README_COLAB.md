@@ -46,6 +46,7 @@ Default environment variables:
 ```bash
 export DATA_ROOT=/content/data
 export OUTPUT_ROOT=/content/output
+export WANDB_DISABLED=true
 ```
 
 ## Train
@@ -117,6 +118,16 @@ In a notebook:
 ```python
 %load_ext tensorboard
 %tensorboard --logdir /content/output/runs/classify
+```
+
+## Weights & Biases
+
+W&B is disabled by default in the Colab scripts because Colab often has `wandb` preinstalled and this older Ultralytics fork uses the filesystem output path as the default W&B project name. TensorBoard remains enabled.
+
+To opt in to W&B, enable it explicitly. The callback sanitizes the Ultralytics output path before passing it to W&B:
+
+```bash
+export WANDB_DISABLED=false
 ```
 
 ## Notes
