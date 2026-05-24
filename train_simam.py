@@ -5,11 +5,17 @@ Plant Leaf Disease Classification with SimAM Attention Module
 
 import torch
 from ultralytics import YOLO
-import yaml
 from pathlib import Path
 import argparse
+import os
 
-def train_model(model_yaml, data_yaml, model_name, epochs=100, imgsz=224, batch=32, device='0'):
+
+def auto_device():
+    return '0' if torch.cuda.is_available() else 'cpu'
+
+
+def train_model(model_yaml, data_yaml, model_name, epochs=100, imgsz=224, batch=32, device='0',
+                output_root='runs/classify'):
     """
     Train YOLOv8 classification model with specified configuration
     
@@ -39,7 +45,7 @@ def train_model(model_yaml, data_yaml, model_name, epochs=100, imgsz=224, batch=
         imgsz=imgsz,
         batch=batch,
         device=device,
-        project='runs/classify',
+        project=output_root,
         name=model_name,
         patience=50,
         save=True,
@@ -96,14 +102,16 @@ def main():
     parser.add_argument('--scale', type=str, default='n', choices=['n', 's', 'm', 'l', 'x'],
                         help='Model scale')
     parser.add_argument('--data', type=str, required=True,
-                        help='Path to data YAML file')
+                        help='Path to classification dataset root')
+    parser.add_argument('--output-root', type=str, default=os.getenv('OUTPUT_ROOT', 'runs/classify'),
+                        help='Output root for classification runs')
     parser.add_argument('--epochs', type=int, default=100,
                         help='Number of training epochs')
     parser.add_argument('--batch', type=int, default=32,
                         help='Batch size')
     parser.add_argument('--imgsz', type=int, default=224,
                         help='Input image size')
-    parser.add_argument('--device', type=str, default='0',
+    parser.add_argument('--device', type=str, default=os.getenv('DEVICE', auto_device()),
                         help='GPU device ID')
     
     args = parser.parse_args()
@@ -122,6 +130,7 @@ def main():
     print(f"Batch Size: {args.batch}")
     print(f"Image Size: {args.imgsz}")
     print(f"Device: {args.device}")
+    print(f"Output Root: {args.output_root}")
     print(f"{'='*60}\n")
     
     # Train model
@@ -132,7 +141,8 @@ def main():
         epochs=args.epochs,
         imgsz=args.imgsz,
         batch=args.batch,
-        device=args.device
+        device=args.device,
+        output_root=args.output_root
     )
 
 

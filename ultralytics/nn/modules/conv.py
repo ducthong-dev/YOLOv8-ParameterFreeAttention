@@ -12,7 +12,7 @@ from torch.nn import init
 from torch.nn.parameter import Parameter
 
 __all__ = ('Conv', 'LightConv', 'DWConv', 'DWConvTranspose2d', 'ConvTranspose', 'Focus', 'GhostConv',
-           'ChannelAttention', 'SpatialAttention', 'CBAM', 'Concat', 'RepConv')
+           'ChannelAttention', 'SpatialAttention', 'CBAM', 'Concat', 'RepConv', 'SSC')
 
 
 def autopad(k, p=None, d=1):  # kernel, padding, dilation
@@ -523,6 +523,26 @@ class SimAM(nn.Module):
         
         # Apply attention weights
         return x * self.activation(y)
+
+
+class SSC(nn.Module):
+    """Parameter-free Simple Slicing Convolution-inspired feature refinement."""
+
+    def __init__(self, e_lambda=1e-4, gain=0.5):
+        super().__init__()
+        self.attn = SimAM(e_lambda)
+        self.gain = gain
+
+    def _attend(self, x):
+        return self.attn(x) if x.shape[-2] * x.shape[-1] > 1 else x
+
+    def forward(self, x):
+        y = torch.empty_like(x)
+        y[..., 0::2, 0::2] = self._attend(x[..., 0::2, 0::2])
+        y[..., 1::2, 0::2] = self._attend(x[..., 1::2, 0::2])
+        y[..., 0::2, 1::2] = self._attend(x[..., 0::2, 1::2])
+        y[..., 1::2, 1::2] = self._attend(x[..., 1::2, 1::2])
+        return x + self.gain * (y - x)
 
 
 class MHSA(nn.Module):

@@ -10,8 +10,8 @@ import torch.nn.functional as F
 from .conv import Conv, DWConv, GhostConv, LightConv, RepConv
 from .transformer import TransformerBlock
 
-__all__ = ('DFL', 'HGBlock', 'HGStem', 'SPP', 'SPPF', 'C1', 'C2', 'C3', 'C2f', 'C3x', 'C3TR', 'C3Ghost',
-           'GhostBottleneck', 'Bottleneck', 'BottleneckCSP', 'Proto', 'RepC3')
+__all__ = ('DFL', 'HGBlock', 'HGStem', 'SPP', 'SPPF', 'C1', 'C2', 'C3', 'C2f', 'C2f_HPC_Lite', 'C3x',
+           'C3TR', 'C3Ghost', 'GhostBottleneck', 'Bottleneck', 'BottleneckCSP', 'Proto', 'RepC3')
 
 
 class DFL(nn.Module):
@@ -183,6 +183,49 @@ class C2f(nn.Module):
 
     def forward_split(self, x):
         """Forward pass using split() instead of chunk()."""
+        y = list(self.cv1(x).split((self.c, self.c), 1))
+        y.extend(m(y[-1]) for m in self.m)
+        return self.cv2(torch.cat(y, 1))
+
+
+class HPCLiteBlock(nn.Module):
+    """Lightweight hierarchical feature block using GhostConv and split depth-wise refinement."""
+
+    def __init__(self, c1, c2, shortcut=True, g=1, splits=4):
+        super().__init__()
+        self.ghost = GhostConv(c1, c2, 1, 1, g=g)
+        self.mix = GhostConv(c2, c2, 1, 1, g=g)
+        self.splits = min(splits, c2)
+        while c2 % self.splits != 0 and self.splits > 1:
+            self.splits -= 1
+        c_ = c2 // self.splits
+        self.dw = nn.ModuleList(DWConv(c_, c_, 3, 1) for _ in range(self.splits - 1))
+        self.add = shortcut and c1 == c2
+
+    def forward(self, x):
+        y = list(self.ghost(x).chunk(self.splits, 1))
+        for i, m in enumerate(self.dw, 1):
+            y[i] = m(y[i] + y[i - 1])
+        y = self.mix(torch.cat(y, 1))
+        return x + y if self.add else y
+
+
+class C2f_HPC_Lite(nn.Module):
+    """C2f variant with lightweight hierarchical phantom-convolution-inspired blocks."""
+
+    def __init__(self, c1, c2, n=1, shortcut=False, g=1, e=0.5):
+        super().__init__()
+        self.c = int(c2 * e)
+        self.cv1 = Conv(c1, 2 * self.c, 1, 1)
+        self.cv2 = Conv((2 + n) * self.c, c2, 1)
+        self.m = nn.ModuleList(HPCLiteBlock(self.c, self.c, shortcut, g) for _ in range(n))
+
+    def forward(self, x):
+        y = list(self.cv1(x).chunk(2, 1))
+        y.extend(m(y[-1]) for m in self.m)
+        return self.cv2(torch.cat(y, 1))
+
+    def forward_split(self, x):
         y = list(self.cv1(x).split((self.c, self.c), 1))
         y.extend(m(y[-1]) for m in self.m)
         return self.cv2(torch.cat(y, 1))
