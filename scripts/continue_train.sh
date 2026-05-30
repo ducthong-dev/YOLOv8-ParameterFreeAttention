@@ -5,8 +5,9 @@ cd "$(dirname "$0")/.."
 
 DATA_ROOT="${DATA_ROOT:-/content/data}"
 OUTPUT_ROOT="${OUTPUT_ROOT:-/content/output}"
-MODEL_WEIGHTS="${MODEL_WEIGHTS:-${OUTPUT_ROOT%/}/runs/classify/${RUN_NAME:-yolov8n_sma_cls}/weights/last.pt}"
 RUN_NAME="${RUN_NAME:-yolov8n_sma_cls}"
+MODEL_WEIGHTS="${MODEL_WEIGHTS:-${OUTPUT_ROOT%/}/runs/classify/${RUN_NAME}/weights/last.pt}"
+SAVE_DIR="${SAVE_DIR:-${OUTPUT_ROOT%/}/runs/classify/${RUN_NAME}}"
 EPOCHS="${EPOCHS:-100}"
 BATCH="${BATCH:-64}"
 IMGSZ="${IMGSZ:-224}"
@@ -15,7 +16,8 @@ WORKERS="${WORKERS:-2}"
 DEVICE="${DEVICE:-auto}"
 LR0="${LR0:-0.001}"
 OPTIMIZER="${OPTIMIZER:-AdamW}"
-PROJECT="${PROJECT:-${OUTPUT_ROOT%/}/runs/classify}"
+PROJECT="${PROJECT:-yolov8_classify}"
+WANDB="${WANDB:-False}"
 EXTRA_ARGS="${EXTRA_ARGS:-}"
 
 if [[ "$DEVICE" == "auto" ]]; then
@@ -36,7 +38,7 @@ if [[ ! -f "$MODEL_WEIGHTS" ]]; then
   exit 3
 fi
 
-mkdir -p "$PROJECT"
+mkdir -p "$SAVE_DIR"
 
 echo "Continuing training from weights: $MODEL_WEIGHTS"
 
@@ -50,10 +52,12 @@ time python yolo_local.py classify train \
   optimizer="$OPTIMIZER" \
   lr0="$LR0" \
   project="$PROJECT" \
+  save_dir="$SAVE_DIR" \
   name="$RUN_NAME" \
   device="$DEVICE" \
   workers="$WORKERS" \
   cache="$CACHE" \
+  wandb=$WANDB \
   cos_lr=True \
   dropout=0.1 \
   label_smoothing=0.05 \
